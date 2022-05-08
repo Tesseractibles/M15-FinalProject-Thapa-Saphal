@@ -1,0 +1,157 @@
+package com.company.Final.Project;
+
+import com.company.Final.Project.caching.CachedCoin;
+import com.company.Final.Project.caching.CachedWeather;
+import com.company.Final.Project.caching.CoinScheduler;
+import com.company.Final.Project.caching.WeatherScheduler;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Set;
+
+import static com.company.Final.Project.apiCalls.OpenWeatherAPI.openWeather;
+import static com.company.Final.Project.apiCalls.IssAPI.issAPI;
+import static com.company.Final.Project.apiCalls.IssOpenWeatherAPIs.issWeatherConditions;
+import static com.company.Final.Project.apiCalls.CoinAPI.cryptoPrices;
+
+@SpringBootApplication
+public class FinalProjectApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(FinalProjectApplication.class, args);
+
+		Set<Integer> menuChoicesSet = new HashSet<Integer>(Arrays.asList(1,2,3,4,5,6));
+		HashMap<String, CachedWeather> cachedWeather = new HashMap<>();
+		HashMap<String, CachedCoin> cachedCoin = new HashMap<>();
+
+		WeatherScheduler clearCachedWeather = new WeatherScheduler();
+		CoinScheduler clearCachedCoin = new CoinScheduler();
+
+		clearCachedWeather.clearMap(cachedWeather);
+		clearCachedCoin.clearMap(cachedCoin);
+
+		Scanner scan = new Scanner(System.in);
+		String userInput;
+		int userChoice = 0;
+
+		System.out.println("----------");
+		System.out.println("Welcome. Please select from the menu below");
+		System.out.println("----------");
+
+		menuSelection();
+
+		do {
+			try {
+
+					userInput = scan.nextLine();
+					userChoice = Integer.parseInt(userInput);
+
+					if (menuChoicesSet.contains(userChoice)) {
+
+						switch (userChoice) {
+							case 1:
+								System.out.println("----------");
+								System.out.println(" Weather in a city");
+								System.out.println("----------");
+								System.out.println("What city would you like to find the weather for?");
+								userInput = scan.nextLine();
+								userInput = userInputStringFormat(userInput);
+
+								if (cachedWeather.containsKey(userInput)) {
+									System.out.println(cachedWeather.get(userInput));
+								} else {
+									openWeather(userInput, cachedWeather);
+								}
+
+								menuOptionMessage();
+								break;
+							case 2:
+								System.out.println("----------");
+								System.out.println("Location of ISS");
+								System.out.println("----------");
+								issAPI();
+
+								menuOptionMessage();
+								break;
+							case 3:
+								System.out.println("----------");
+								System.out.println("Weather in location of ISS");
+								System.out.println("----------");
+								issWeatherConditions();
+
+								menuOptionMessage();
+								break;
+							case 4:
+								System.out.println("----------");
+								System.out.println("Current crypto prices");
+								System.out.println("----------");
+								System.out.println("Enter the symbol of a cryptocurrency (ex: BTC or ETH)");
+								userInput = scan.nextLine();
+								userInput = userInput.toUpperCase();
+
+								if (cachedCoin.containsKey(userInput)) {
+									System.out.println(cachedCoin.get(userInput));
+								} else {
+									cryptoPrices(userInput, cachedCoin);
+								}
+
+								menuOptionMessage();
+								break;
+							case 5:
+								System.out.println("Goodbye.");
+								break;
+							case 6:
+								menuSelection();
+								break;
+							default:
+								System.out.println("Please enter a valid option.");
+								break;
+						}
+					} else {
+						System.out.println("Error. Please enter a valid menu option.");
+					}
+
+			} catch (NumberFormatException ne) {
+				System.out.println("Please enter a valid number.");
+			} catch (Exception exception) {
+				System.out.println("An error has occurred.");
+			}
+		} while (userChoice != 5);
+	}
+
+	public static void menuOptionMessage() {
+		System.out.println("\n" + "Enter a menu selection. ");
+		System.out.println("----------");
+		System.out.println("You can also: ");
+		System.out.println("Press 5 to exit.");
+		System.out.println("Press 6 to view the menu options again.");
+		System.out.println("----------");
+	}
+
+	public static void menuSelection() {
+		System.out.println("1 - Weather in a city");
+		System.out.println("2 - Location of the International Space Station (ISS)");
+		System.out.println("3 - Weather in the Location of the ISS");
+		System.out.println("4 - Current Cryptocurrency Prices");
+		System.out.println("5 - Exit");
+	}
+
+	public static String userInputStringFormat(String userInput) {
+
+
+		String[] userInputC;
+		String temp;
+
+		userInput = userInput.toLowerCase();
+		userInputC = userInput.split("");
+		userInputC[0] = userInputC[0].toUpperCase();
+		temp = String.join("", userInputC);
+		userInput = temp;
+
+		return userInput;
+	}
+}
